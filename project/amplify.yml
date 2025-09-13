@@ -1,0 +1,31 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - npm install
+        - cd project && npm install
+        - cd "../Admin Dash board" && npm install
+    build:
+      commands:
+        # build root app
+        - npm run build
+        - mkdir -p dist/root
+        - mv build/* dist/root/
+
+        # build customer app
+        - cd ../project && npm run build
+        - mkdir -p ../dist/customer
+        - mv build/* ../dist/customer/
+
+        # build admin app
+        - cd "../Admin Dash board" && npm run build
+        - mkdir -p ../dist/admin
+        - mv build/* ../dist/admin/
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - node_modules/**/*
