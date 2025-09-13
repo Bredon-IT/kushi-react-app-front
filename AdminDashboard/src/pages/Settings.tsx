@@ -69,7 +69,7 @@ export function Settings() {
     if (formData) {
       axios
         .put(
-          `https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/login/update/${formData.adminId}`,
+          `https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/update/${formData.adminId}`,
           formData
         )
         .then((res) => {
@@ -81,59 +81,59 @@ export function Settings() {
     }
   };
 
-  
   // ✅ password change
-const handlePasswordChange = () => {
-  if (settings.newPassword !== settings.confirmPassword) {
-    alert("❌ New password and confirm password do not match");
-    return;
-  }
-  if (!settings.currentPassword) {
-    alert("❌ Please enter current password");
-    return;
-  }
+  const handlePasswordChange = () => {
+    if (settings.newPassword !== settings.confirmPassword) {
+      alert("❌ New password and confirm password do not match");
+      return;
+    }
+    if (!settings.currentPassword) {
+      alert("❌ Please enter current password");
+      return;
+    }
 
-  if (!admin) {
-    alert("❌ Admin not loaded");
-    return;
-  }
+    if (!admin) {
+      alert("❌ Admin not loaded");
+      return;
+    }
 
-  axios
-    .put(
-      `https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/login/update-password/${admin.adminId}`,
-      null, // body not needed, params in query
-      {
-        params: {
-          oldPassword: settings.currentPassword,
-          newPassword: settings.newPassword,
-        },
-      }
-    )
-    .then(() => {
-      alert("✅ Password updated successfully");
-      setSettings((prev) => ({
-        ...prev,
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      }));
-    })
-    .catch((err) => {
-      if (err.response?.data) {
-        alert(`❌ ${err.response.data}`);
-      } else {
-        alert("❌ Error updating password");
-      }
-    });
-};
-
+    axios
+      .put(
+        `https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/update-password/${admin.adminId}`,
+        null,
+        {
+          params: {
+            oldPassword: settings.currentPassword,
+            newPassword: settings.newPassword,
+          },
+        }
+      )
+      .then(() => {
+        alert("✅ Password updated successfully");
+        setSettings((prev) => ({
+          ...prev,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        }));
+      })
+      .catch((err) => {
+        if (err.response?.data) {
+          alert(`❌ ${err.response.data}`);
+        } else {
+          alert("❌ Error updating password");
+        }
+      });
+  };
 
   // ✅ fetch logged-in admin details
   useEffect(() => {
     const email = localStorage.getItem("adminEmail");
     if (email) {
       axios
-        .get<Admin>(`https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/login/me/${email}`)
+        .get<Admin>(
+          `https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/me/${email}`
+        )
         .then((res) => {
           setAdmin(res.data);
           setFormData(res.data);
@@ -377,7 +377,11 @@ const handlePasswordChange = () => {
                 placeholder="Confirm new password"
               />
             </div>
-            <Button onClick={handlePasswordChange} variant="danger" className="w-full">
+            <Button
+              onClick={handlePasswordChange}
+              variant="danger"
+              className="w-full"
+            >
               Change Password
             </Button>
           </CardContent>
@@ -402,7 +406,6 @@ const handlePasswordChange = () => {
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               >
                 <option value="english">English</option>
-               
               </select>
             </div>
             <div>
