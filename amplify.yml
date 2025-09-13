@@ -10,10 +10,13 @@ frontend:
     build:
       commands:
         - rm -rf dist && mkdir -p dist
+
+        # 👇 Build Customer app directly to root (dist/)
         - cd project && npm run build
-        - mkdir -p ../dist/customer
-        - cp -r dist/* ../dist/customer/
+        - cp -r dist/* ../dist/
         - cd ..
+
+        # 👇 Build Admin app to /admin
         - cd AdminDashboard && npm run build
         - mkdir -p ../dist/admin
         - cp -r dist/* ../dist/admin/
