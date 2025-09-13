@@ -4,20 +4,17 @@ frontend:
     preBuild:
       commands:
         - cd project && (npm ci || npm install)
-        - cd ../AdminDashboard && (npm ci || npm install)
+        - cd ..
+        - cd AdminDashboard && (npm ci || npm install)
         - cd ..
     build:
       commands:
         - rm -rf dist && mkdir -p dist
-
-        # build Customer (project) -> dist/customer
         - cd project && npm run build
         - mkdir -p ../dist/customer
         - cp -r dist/* ../dist/customer/
         - cd ..
-
-        # build Admin -> dist/admin
-        - cd ../AdminDashboard && npm run build
+        - cd AdminDashboard && npm run build
         - mkdir -p ../dist/admin
         - cp -r dist/* ../dist/admin/
         - cd ..
