@@ -1,0 +1,32 @@
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd project && (npm ci || npm install)
+        - cd "../Admin Dash board" && (npm ci || npm install)
+        - cd ..
+    build:
+      commands:
+        # fresh output folder
+        - rm -rf dist && mkdir -p dist
+
+        # build Customer (project) -> dist/customer
+        - cd project && npm run build
+        - mkdir -p ../dist/customer
+        - cp -r dist/* ../dist/customer/
+        - cd ..
+
+        # build Admin -> dist/admin
+        - cd "../Admin Dash board" && npm run build
+        - mkdir -p ../dist/admin
+        - cp -r dist/* ../dist/admin/
+        - cd ..
+  artifacts:
+    baseDirectory: dist
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - project/node_modules/**/*
+      - "Admin Dash board/node_modules/**/*"
