@@ -4,11 +4,10 @@ frontend:
     preBuild:
       commands:
         - cd project && (npm ci || npm install)
-        - cd "../Admin Dash board" && (npm ci || npm install)
+        - cd ../AdminDashboard && (npm ci || npm install)
         - cd ..
     build:
       commands:
-        # fresh output folder
         - rm -rf dist && mkdir -p dist
 
         # build Customer (project) -> dist/customer
@@ -18,7 +17,7 @@ frontend:
         - cd ..
 
         # build Admin -> dist/admin
-        - cd "../Admin Dash board" && npm run build
+        - cd ../AdminDashboard && npm run build
         - mkdir -p ../dist/admin
         - cp -r dist/* ../dist/admin/
         - cd ..
@@ -29,4 +28,4 @@ frontend:
   cache:
     paths:
       - project/node_modules/**/*
-      - "Admin Dash board/node_modules/**/*"
+      - AdminDashboard/node_modules/**/*
