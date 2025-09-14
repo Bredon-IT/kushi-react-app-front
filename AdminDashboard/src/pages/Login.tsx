@@ -24,14 +24,17 @@ export function Login() {
     try {
       if (isLogin) {
         // ✅ LOGIN API
-        const res = await fetch('https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: formData.email,
-            password: formData.password
-          })
-        });
+        const res = await fetch(
+          'https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/login',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              email: formData.email,
+              password: formData.password,
+            }),
+          }
+        );
 
         if (res.ok) {
           const admin = await res.json();
@@ -45,7 +48,7 @@ export function Login() {
           alert(msg || 'Invalid email or password');
         }
       } else {
-        // SIGNUP VALIDATION
+        // ✅ SIGNUP VALIDATION
         if (
           !formData.adminname ||
           !formData.email.includes('@') ||
@@ -56,23 +59,32 @@ export function Login() {
           return;
         }
 
-        // ✅ SIGNUP API
-        const res = await fetch('https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/signup', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            adminname: formData.adminname,
-            email: formData.email,
-            password: formData.password,
-            phoneNumber: formData.phoneNumber,
-          })
-        });
+        // ✅ REGISTER API (backend expects /register, not /signup)
+        const res = await fetch(
+          'https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/register',
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              adminname: formData.adminname,
+              email: formData.email,
+              password: formData.password,
+              phoneNumber: formData.phoneNumber,
+            }),
+          }
+        );
 
         const msg = await res.text();
         if (res.ok) {
           alert(msg || 'Registration successful! Please log in.');
           setIsLogin(true);
-          setFormData({ email: '', password: '', adminname: '', confirmPassword: '', phoneNumber: '' });
+          setFormData({
+            email: '',
+            password: '',
+            adminname: '',
+            confirmPassword: '',
+            phoneNumber: '',
+          });
         } else {
           alert(msg || 'Registration failed');
         }
@@ -84,9 +96,9 @@ export function Login() {
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -106,7 +118,9 @@ export function Login() {
             Kushi Services
           </h1>
           <p className="text-gray-600 mt-2">
-            {isLogin ? 'Welcome back to your dashboard' : 'Create your admin account'}
+            {isLogin
+              ? 'Welcome back to your dashboard'
+              : 'Create your admin account'}
           </p>
         </div>
 
@@ -118,7 +132,9 @@ export function Login() {
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </h2>
               <p className="text-gray-600 mt-1">
-                {isLogin ? 'Access your admin dashboard' : 'Create your admin account'}
+                {isLogin
+                  ? 'Access your admin dashboard'
+                  : 'Create your admin account'}
               </p>
             </div>
 
@@ -201,7 +217,11 @@ export function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                    {showPassword ? (
+                      <EyeOff className="h-5 w-5" />
+                    ) : (
+                      <Eye className="h-5 w-5" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -229,16 +249,27 @@ export function Login() {
               {isLogin && (
                 <div className="flex items-center justify-between">
                   <label className="flex items-center">
-                    <input type="checkbox" className="rounded border-gray-300 text-primary-600 focus:ring-primary-500" />
-                    <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                    <input
+                      type="checkbox"
+                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-600">
+                      Remember me
+                    </span>
                   </label>
-                  <button type="button" className="text-sm text-primary-600 hover:text-primary-700">
+                  <button
+                    type="button"
+                    className="text-sm text-primary-600 hover:text-primary-700"
+                  >
                     Forgot password?
                   </button>
                 </div>
               )}
 
-              <Button type="submit" className="w-full py-3 text-base font-semibold">
+              <Button
+                type="submit"
+                className="w-full py-3 text-base font-semibold"
+              >
                 {isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
