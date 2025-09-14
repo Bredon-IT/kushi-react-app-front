@@ -1,12 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, Lock, Mail, User } from 'lucide-react';
+import { Eye, EyeOff, Lock, Mail, User, Phone } from 'lucide-react';
 import { useAuth } from '../hooks/useAuth';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
-
-// ✅ import services
-import { loginAdmin, signupAdmin } from '../services/AuthService';
 
 export function Login() {
   const { login } = useAuth();
@@ -27,14 +24,27 @@ export function Login() {
     try {
       if (isLogin) {
         // ✅ LOGIN API
-        const res = await loginAdmin(formData.email, formData.password);
+        const res = await fetch('https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/login/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: formData.email,
+            password: formData.password
+          })
+        });
 
-        const admin = res.data;
-        localStorage.setItem('admin', JSON.stringify(admin));
-        localStorage.setItem('adminEmail', admin.email || '');
-        alert('Login successful');
-        login();
-        navigate('/');
+        if (res.ok) {
+          const admin = await res.json();
+          localStorage.setItem('admin', JSON.stringify(admin));
+          localStorage.setItem('adminEmail', admin.email || '');
+          alert('Login successful');
+          login();
+          navigate('/');
+        } else {
+          const msg = await res.text();
+          alert(msg || 'Invalid email or password');
+        }
+
       } else {
         // ✅ SIGNUP VALIDATION
         if (
@@ -47,25 +57,30 @@ export function Login() {
           return;
         }
 
-        // ✅ SIGNUP API
-        await signupAdmin({
-          adminname: formData.adminname,
-          email: formData.email,
-          phoneNumber: formData.phoneNumber,
-          password: formData.password,
+        // ✅ REGISTER API (matches LoginController.registerAdmin)
+        const res = await fetch('https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/login/register', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            adminname: formData.adminname,
+            email: formData.email,
+            password: formData.password,
+            phoneNumber: formData.phoneNumber,
+          })
         });
 
-        alert('Registration successful! Please log in.');
-        setIsLogin(true);
-        setFormData({ email: '', password: '', adminname: '', confirmPassword: '', phoneNumber: '' });
+        const msg = await res.text();
+        if (res.ok) {
+          alert(msg || 'Registration successful! Please log in.');
+          setIsLogin(true);
+          setFormData({ email: '', password: '', adminname: '', confirmPassword: '', phoneNumber: '' });
+        } else {
+          alert(msg || 'Registration failed');
+        }
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error:', error);
-      if (error.response?.data) {
-        alert(error.response.data);
-      } else {
-        alert('Something went wrong. Please try again.');
-      }
+      alert('Something went wrong. Please try again.');
     }
   };
 
@@ -79,7 +94,7 @@ export function Login() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary-50 via-white to-coral-50 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        {/* Logo and Branding */}
+        {/* Branding */}
         <div className="text-center mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-primary-600 to-coral-600 rounded-2xl shadow-lg mb-4">
             <img
@@ -96,7 +111,7 @@ export function Login() {
           </p>
         </div>
 
-        {/* Login/Signup Form */}
+        {/* Form */}
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
           <CardContent className="p-8">
             <div className="text-center mb-6">
@@ -110,25 +125,49 @@ export function Login() {
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="adminname"
-                      value={formData.adminname}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                      placeholder="Enter your full name"
-                      required={!isLogin}
-                    />
+                <>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        name="adminname"
+                        value={formData.adminname}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                        placeholder="Enter your full name"
+                        required
+                      />
+                    </div>
                   </div>
-                </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <Phone className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                      <input
+                        type="text"
+                        name="phoneNumber"
+                        value={formData.phoneNumber}
+                        onChange={handleInputChange}
+                        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                        placeholder="Enter your phone number"
+                        required
+                      />
+                    </div>
+                  </div>
+                </>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Address
+                </label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
@@ -143,23 +182,10 @@ export function Login() {
                 </div>
               </div>
 
-              {!isLogin && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
-                  <input
-                    type="text"
-                    name="phoneNumber"
-                    value={formData.phoneNumber}
-                    onChange={handleInputChange}
-                    className="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                    placeholder="Enter your phone number"
-                    required={!isLogin}
-                  />
-                </div>
-              )}
-
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
@@ -183,16 +209,21 @@ export function Login() {
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
-                  <input
-                    type="password"
-                    name="confirmPassword"
-                    value={formData.confirmPassword}
-                    onChange={handleInputChange}
-                    className="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                    placeholder="Confirm your password"
-                    required={!isLogin}
-                  />
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Confirm Password
+                  </label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      name="confirmPassword"
+                      value={formData.confirmPassword}
+                      onChange={handleInputChange}
+                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                      placeholder="Confirm your password"
+                      required
+                    />
+                  </div>
                 </div>
               )}
 
@@ -217,7 +248,9 @@ export function Login() {
         </Card>
 
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">© 2024 Kushi Services. All rights reserved.</p>
+          <p className="text-sm text-gray-500">
+            © 2024 Kushi Services. All rights reserved.
+          </p>
         </div>
       </div>
     </div>
