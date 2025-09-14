@@ -5,6 +5,9 @@ import { useAuth } from '../hooks/useAuth';
 import { Card, CardContent } from '../components/ui/Card';
 import { Button } from '../components/ui/Button';
 
+// ✅ import services
+import { loginAdmin, signupAdmin } from '../services/AuthService';
+
 export function Login() {
   const { login } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
@@ -24,29 +27,14 @@ export function Login() {
     try {
       if (isLogin) {
         // ✅ LOGIN API
-        const res = await fetch(
-          'https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/login',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              email: formData.email,
-              password: formData.password,
-            }),
-          }
-        );
+        const res = await loginAdmin(formData.email, formData.password);
 
-        if (res.ok) {
-          const admin = await res.json();
-          localStorage.setItem('admin', JSON.stringify(admin));
-          localStorage.setItem('adminEmail', admin.email || '');
-          alert('Login successful');
-          login();
-          navigate('/');
-        } else {
-          const msg = await res.text();
-          alert(msg || 'Invalid email or password');
-        }
+        const admin = res.data;
+        localStorage.setItem('admin', JSON.stringify(admin));
+        localStorage.setItem('adminEmail', admin.email || '');
+        alert('Login successful');
+        login();
+        navigate('/');
       } else {
         // ✅ SIGNUP VALIDATION
         if (
@@ -59,46 +47,32 @@ export function Login() {
           return;
         }
 
-        // ✅ REGISTER API (backend expects /register, not /signup)
-        const res = await fetch(
-          'https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth/register',
-          {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              adminname: formData.adminname,
-              email: formData.email,
-              password: formData.password,
-              phoneNumber: formData.phoneNumber,
-            }),
-          }
-        );
+        // ✅ SIGNUP API
+        await signupAdmin({
+          adminname: formData.adminname,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          password: formData.password,
+        });
 
-        const msg = await res.text();
-        if (res.ok) {
-          alert(msg || 'Registration successful! Please log in.');
-          setIsLogin(true);
-          setFormData({
-            email: '',
-            password: '',
-            adminname: '',
-            confirmPassword: '',
-            phoneNumber: '',
-          });
-        } else {
-          alert(msg || 'Registration failed');
-        }
+        alert('Registration successful! Please log in.');
+        setIsLogin(true);
+        setFormData({ email: '', password: '', adminname: '', confirmPassword: '', phoneNumber: '' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error:', error);
-      alert('Something went wrong. Please try again.');
+      if (error.response?.data) {
+        alert(error.response.data);
+      } else {
+        alert('Something went wrong. Please try again.');
+      }
     }
   };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
-      [e.target.name]: e.target.value,
+      [e.target.name]: e.target.value
     }));
   };
 
@@ -118,9 +92,7 @@ export function Login() {
             Kushi Services
           </h1>
           <p className="text-gray-600 mt-2">
-            {isLogin
-              ? 'Welcome back to your dashboard'
-              : 'Create your admin account'}
+            {isLogin ? 'Welcome back to your dashboard' : 'Create your admin account'}
           </p>
         </div>
 
@@ -132,18 +104,14 @@ export function Login() {
                 {isLogin ? 'Sign In' : 'Sign Up'}
               </h2>
               <p className="text-gray-600 mt-1">
-                {isLogin
-                  ? 'Access your admin dashboard'
-                  : 'Create your admin account'}
+                {isLogin ? 'Access your admin dashboard' : 'Create your admin account'}
               </p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Full Name
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Full Name</label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                     <input
@@ -160,9 +128,7 @@ export function Login() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Address
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
@@ -179,28 +145,21 @@ export function Login() {
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Phone Number
-                  </label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <input
-                      type="text"
-                      name="phoneNumber"
-                      value={formData.phoneNumber}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                      placeholder="Enter your phone number"
-                      required={!isLogin}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                  <input
+                    type="text"
+                    name="phoneNumber"
+                    value={formData.phoneNumber}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    placeholder="Enter your phone number"
+                    required={!isLogin}
+                  />
                 </div>
               )}
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Password
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Password</label>
                 <div className="relative">
                   <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
                   <input
@@ -217,59 +176,27 @@ export function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-3 top-3 text-gray-400 hover:text-gray-600"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-5 w-5" />
-                    ) : (
-                      <Eye className="h-5 w-5" />
-                    )}
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
                   </button>
                 </div>
               </div>
 
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Confirm Password
-                  </label>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                    <input
-                      type={showPassword ? 'text' : 'password'}
-                      name="confirmPassword"
-                      value={formData.confirmPassword}
-                      onChange={handleInputChange}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
-                      placeholder="Confirm your password"
-                      required={!isLogin}
-                    />
-                  </div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password</label>
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                    className="w-full pl-4 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                    placeholder="Confirm your password"
+                    required={!isLogin}
+                  />
                 </div>
               )}
 
-              {isLogin && (
-                <div className="flex items-center justify-between">
-                  <label className="flex items-center">
-                    <input
-                      type="checkbox"
-                      className="rounded border-gray-300 text-primary-600 focus:ring-primary-500"
-                    />
-                    <span className="ml-2 text-sm text-gray-600">
-                      Remember me
-                    </span>
-                  </label>
-                  <button
-                    type="button"
-                    className="text-sm text-primary-600 hover:text-primary-700"
-                  >
-                    Forgot password?
-                  </button>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full py-3 text-base font-semibold"
-              >
+              <Button type="submit" className="w-full py-3 text-base font-semibold">
                 {isLogin ? 'Sign In' : 'Create Account'}
               </Button>
             </form>
@@ -290,9 +217,7 @@ export function Login() {
         </Card>
 
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-500">
-            © 2024 Kushi Services. All rights reserved.
-          </p>
+          <p className="text-sm text-gray-500">© 2024 Kushi Services. All rights reserved.</p>
         </div>
       </div>
     </div>

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-// ✅ Correct base URL (same as Customer)
+// ✅ Base URL for your backend (same as customer app)
 const API_URL = "https://bmytsqa7b3.ap-south-1.awsapprunner.com/api/auth";
 
 // ---------------------------
@@ -12,14 +12,14 @@ export const loginAdmin = async (email: string, password: string) => {
   return axios.post(`${API_URL}/login`, { email, password });
 };
 
-// Signup
+// Signup (use /register, not /signup)
 export const signupAdmin = async (formData: {
-  fullName: string;
+  adminname: string;      // ✅ matches your Login.tsx
   email: string;
-  phone: string;
+  phoneNumber: string;
   password: string;
 }) => {
-  return axios.post(`${API_URL}/signup`, formData);
+  return axios.post(`${API_URL}/register`, formData);
 };
 
 // Forgot Password
@@ -30,7 +30,7 @@ export const forgotPasswordAdmin = async (
   return axios.post(`${API_URL}/forgot-password`, { email, newPassword });
 };
 
-// (Optional) Get All Users – if you need it for Admin dashboard
+// Get All Users – optional for Admin Dashboard
 export const getAllUsersAdmin = async () => {
   return axios.get(`${API_URL}/users`);
 };
